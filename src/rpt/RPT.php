@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace rpt;
 
+use InvalidArgumentException;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\Config;
@@ -85,7 +86,6 @@ final class RPT {
 
 		$this->players->save();
 	}
-
 
 	public function getPlayerRP(string $player): int {
 		return $this->players->getNested($player . ".rp", 0);
@@ -174,79 +174,60 @@ final class RPT {
 	 * </pre>
 	 */
 	public function calculateMatchRP(array $teams, array $results): void {
-		// Ensure teams and results match in size
 		if (count($teams) !== count($results)) {
-			throw new \InvalidArgumentException("Teams and results array must have the same size.");
+			throw new InvalidArgumentException("Teams and results array must have the same size.");
 		}
 
-		// Normalize results for multi-team scenarios
 		$maxResult = max($results);
-		$normalizedResults = array_map(fn($result) => $result / $maxResult, $results);
-
-		// Calculate RP changes for each player
+		$normalizedResults = array_map(fn ($result) => $result / $maxResult, $results);
 		foreach ($teams as $index => $team) {
 			$teamRP = 0;
-
-			// Calculate average RP of the team
 			foreach ($team as $player) {
 				$playerName = $player->getName();
 				$teamRP += $this->getPlayerRP($playerName);
 			}
-			$teamRP = count($team) > 0 ? $teamRP / count($team) : 0;
 
-			// Compare this team with all other teams
+			$teamRP = count($team) > 0 ? $teamRP / count($team) : 0;
 			foreach ($teams as $otherIndex => $otherTeam) {
 				if ($index === $otherIndex) {
 					continue;
 				}
 
 				$otherTeamRP = 0;
-
-				// Calculate average RP of the other team
 				foreach ($otherTeam as $otherPlayer) {
 					$otherPlayerName = $otherPlayer->getName();
 					$otherTeamRP += $this->getPlayerRP($otherPlayerName);
 				}
+
 				$otherTeamRP = count($otherTeam) > 0 ? $otherTeamRP / count($otherTeam) : 0;
 
-				// Calculate RP change based on results
 				$expected = 1 / (1 + pow(10, ($otherTeamRP - $teamRP) / 400));
-				$actual = $normalizedResults[$index] > $normalizedResults[$otherIndex] ? 1 :
-					($normalizedResults[$index] === $normalizedResults[$otherIndex] ? 0.5 : 0);
+				$actual = $normalizedResults[$index] > $normalizedResults[$otherIndex] ? 1 : ($normalizedResults[$index] === $normalizedResults[$otherIndex] ? 0.5 : 0);
 				$rpChange = 32 * ($actual - $expected);
 
-				// Update each player's RP with protection logic
 				foreach ($team as $player) {
 					$playerName = $player->getName();
 					$currentRP = $this->getPlayerRP($playerName);
 					$newRP = max(0, round($currentRP + $rpChange));
 					$currentRank = $this->getRank($playerName);
 
-					// Get rank minimum RP
 					$minRP = $currentRank->minRP;
-
-					// Check if player is protected
 					$isProtected = $this->players->getNested($playerName . ".protected", false);
-
 					if ($newRP < $minRP) {
 						if ($isProtected) {
-							// If protected, allow RP to fall below the minimum
 							$this->setPlayerRP($playerName, $newRP);
-							$this->players->setNested($playerName . ".protected", false); // Remove protection
+							$this->players->setNested($playerName . ".protected", false);
 						} else {
-							// If not protected, set RP to rank minimum and activate protection
 							$this->setPlayerRP($playerName, $minRP);
 							$this->players->setNested($playerName . ".protected", true);
 						}
 					} else {
-						// Normal RP update if above the rank's minimum
 						$this->setPlayerRP($playerName, $newRP);
 					}
 				}
 			}
 		}
 
-		// Placement games handling
 		foreach ($teams as $team) {
 			foreach ($team as $player) {
 				$playerName = $player->getName();
