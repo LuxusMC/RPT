@@ -98,9 +98,9 @@ class MyPlugin extends PluginBase {
             $player5
         ];
         $results = [
-            1,  // Player 1 wins
+            1,  // Player 1
             0,  // Player 2
-            9,  // Player 3
+            9,  // Player 3 wins
             3,  // Player 4
             5   // Player 5
         ];
