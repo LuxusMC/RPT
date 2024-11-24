@@ -10,14 +10,23 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\utils\Config;
 use function mkdir;
 
+/**
+ * RPT (Ranked Progression Tracker) main class where players' RP (Rank Points) are handled and process.
+ */
 final class RPT {
 
 	private Config $config;
 
 	private Config $players;
 
+	/** @phpstan-var array<string, Rank> */
 	private array $ranks = [];
 
+	/**
+	 * Initializes the configuration and player data, and sets up the ranks.
+	 *
+	 * @phpstan-param PluginBase $plugin The plugin instance.
+	 */
 	public function __construct(private readonly PluginBase $plugin) {
 		@mkdir($this->plugin->getDataFolder() . "rpt");
 		$this->config = new Config($this->plugin->getDataFolder() . "rpt/config.json", Config::JSON, [
@@ -72,10 +81,9 @@ final class RPT {
 	 * **THIS ACTION CANNOT BE UNDONE**
 	 *
 	 * Reset all players' RP and ranks to the default values.
-	 * This is useful for testing purposes or if you want to reset the entire system.
+	 * This is useful for testing purposes, or if you want to reset the entire system.
 	 * You should be careful when using this method as it will reset all players' RP and ranks.
 	 * You may want to notify players or log this action.
-	 *
 	 */
 	public function resetAllRP(): void {
 		foreach ($this->players->getAll() as $playerName => $data) {
@@ -87,15 +95,27 @@ final class RPT {
 		$this->players->save();
 	}
 
+	/**
+	 * @phpstan-param string $player The name of the player.
+	 * @phpstan-return int The RP (Rank Points) of the player.
+	 */
 	public function getPlayerRP(string $player): int {
 		return $this->players->getNested($player . ".rp", 0);
 	}
 
+	/**
+	 * @phpstan-param string $player The name of the player.
+	 * @phpstan-param int $rp The new RP (Rank Points) value.
+	 */
 	public function setPlayerRP(string $player, int $rp): void {
 		$this->players->setNested($player . ".rp", $rp);
 		$this->players->save();
 	}
 
+	/**
+	 * @phpstan-param string $player The name of the player.
+	 * @phpstan-return Rank The rank of the player.
+	 */
 	public function getRank(string $player): Rank {
 		$rank = $this->ranks["Unranked"];
 		if ($this->players->getNested($player . ".placementGames", $this->config->get("placementGames")) > 0) {
@@ -111,17 +131,25 @@ final class RPT {
 		return $rank;
 	}
 
+	/**
+	 * @phpstan-return array<string, Rank>
+	 */
 	public function getRanks(): array {
 		return $this->ranks;
 	}
 
+	/**
+	 * @return Config All the players' RP (Rank Points) data, including their ranks, placement games, and protection status.
+	 */
 	public function getPlayers(): Config {
 		return $this->players;
 	}
 
 	/**
+	 * Calculate the RP changes for a match.
+	 *
 	 * @phpstan-param array<array<Player>> $teams
-	 * @param array<int> $results Results can be score/kill count, etc. depending on the match type. If its win or loss, use 1 for winning team/player and 0 for every other team/player.
+	 * @phpstan-param array<int> $results Results can be score/kill count, etc. depending on the match type. If its win or loss, use 1 for winning team/player and 0 for every other team/player.
 	 * <pre>
 	 * Example #1 (1v1 match):
 	 *
@@ -172,6 +200,8 @@ final class RPT {
 	 *   ]
 	 * );
 	 * </pre>
+	 *
+	 * @phpstan-throws InvalidArgumentException if the size of teams and results arrays do not match.
 	 */
 	public function calculateMatchRP(array $teams, array $results): void {
 		if (count($teams) !== count($results)) {

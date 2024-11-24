@@ -1,11 +1,11 @@
 
 # RPT Virion for PocketMine-MP
 
-**RPT** is a virion for [PocketMine-MP](https://pmmp.io/) servers, providing a competitive ranked progression system for Minecraft Bedrock. It tracks players' rank progress based on their match performance, with features like placement games, rank protection, and dynamic RP calculations for different match formats.
+**RPT (Ranked Progression Tracker)** is a virion for [PocketMine-MP](https://pmmp.io/) servers, providing a competitive ranked progression system for Minecraft Bedrock. It tracks players' rank progress based on their match performance, with features like placement games, rank protection, and dynamic RP calculations for different match formats.
 
 ## Features
 
-- **Ranked Progression**: Tracks players’ ranks through dynamic RP.
+- **Ranked Progression**: Tracks players’ ranks through dynamic **RP (Rank Points)**.
 - **Placement Games**: Determines initial rank after placement matches.
 - **Rank Protection**: Protects players from deranking too quickly.
 - **Flexible Match Formats**: Supports team-based and free-for-all match types.
