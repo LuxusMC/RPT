@@ -62,7 +62,7 @@ class MyPlugin extends PluginBase {
         ];
         $results = [
             1,  // Team 1 wins
-            0   // Team 2 loses
+            0   // Team 2
         ];
         // Calculate RP based on match results
         $this->rpt->calculateMatchRP($teams, $results);
@@ -79,8 +79,8 @@ class MyPlugin extends PluginBase {
         ];
         $results = [
             3,  // Team 1 wins
-            1,  // Team 2 loses
-            0   // Team 3 loses
+            1,  // Team 2
+            0   // Team 3
         ];
         // Calculate RP based on match results
         $this->rpt->calculateMatchRP($teams, $results);
@@ -91,11 +91,11 @@ class MyPlugin extends PluginBase {
      */
     public function calculateMatchRPExampleFFA(): void {
         $players = [
-            $player1,
-            $player2,
-            $player3,
-            $player4,
-            $player5
+            [$player1],
+            [$player2],
+            [$player3],
+            [$player4],
+            [$player5]
         ];
         $results = [
             1,  // Player 1
